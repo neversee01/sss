@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#d6ebfb">
+<title>Для тебя</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Marck+Script&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#d6ebfb;font-family:'Cormorant Garamond',Georgia,serif;color:#4d6f95}
+body{height:100vh;height:100dvh;position:relative}
+button{font-family:inherit}
+
+.scene{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity 1.2s ease,visibility 1.2s;overflow:hidden}
+.scene.active{opacity:1;visibility:visible}
+
+#sparkles{position:fixed;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+#sparkles span{position:absolute;bottom:-10px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px rgba(255,255,255,.95);opacity:0;animation:up linear infinite}
+#sparkles span:nth-child(odd){background:#ffe3ee;box-shadow:0 0 8px 2px rgba(255,214,230,.9)}
+@keyframes up{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-110vh);opacity:0}}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes spin{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes glow{0%,100%{box-shadow:0 10px 40px rgba(120,170,220,.45),0 0 30px 6px rgba(255,255,255,.7)}50%{box-shadow:0 10px 50px rgba(120,170,220,.55),0 0 60px 18px rgba(255,255,255,.95)}}
+
+#flash{position:fixed;inset:0;z-index:55;pointer-events:none;opacity:0;transition:opacity 1.2s ease;background:radial-gradient(circle at 50% 55%,#fff 0%,#fffbe6 45%,rgba(255,255,255,.92) 100%)}
+#flash.on{opacity:1}
+
+/* ---------- Дверь ---------- */
+#gate{background:radial-gradient(circle at 50% 42%,#f4faff 0%,#d9edfc 55%,#c5e1f7 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,4vh,36px)}
+.title{font-size:clamp(30px,6.5vw,52px);font-style:italic;font-weight:500;letter-spacing:.04em;position:relative;z-index:3}
+.hint{font-size:clamp(16px,3.6vw,21px);font-style:italic;position:relative;z-index:3;animation:pulse 2.4s ease-in-out infinite;transition:opacity .6s}
+.door-wrap{position:relative;width:clamp(150px,30vmin,260px);aspect-ratio:3/5;cursor:pointer;outline:none}
+.rays{position:absolute;left:50%;top:50%;width:170vmax;height:170vmax;border-radius:50%;z-index:0;opacity:0;scale:.15;
+ background:repeating-conic-gradient(rgba(255,255,255,.85) 0 6deg,rgba(255,255,255,0) 6deg 18deg);
+ -webkit-mask-image:radial-gradient(circle,#000 0%,transparent 55%);mask-image:radial-gradient(circle,#000 0%,transparent 55%);
+ transition:opacity 1.4s ease,scale 2.4s ease;animation:spin 50s linear infinite;pointer-events:none}
+.door-wrap.open .rays{opacity:1;scale:1}
+.frame{position:absolute;inset:0;z-index:1;perspective:900px;border:6px solid #fff;border-radius:999px 999px 10px 10px;animation:glow 3.5s ease-in-out infinite;transition:box-shadow 1.5s}
+.door-wrap.open .frame{animation:none;box-shadow:0 0 90px 36px rgba(255,248,210,.95)}
+.inside{position:absolute;inset:0;border-radius:inherit;background:radial-gradient(circle at 50% 60%,#fff 0%,#fff7cf 50%,#ffe9b8 100%)}
+.leaf{position:absolute;inset:0;border-radius:inherit;transform-origin:left center;backface-visibility:hidden;
+ background:linear-gradient(160deg,#ffffff,#d6e9fa);box-shadow:inset 0 0 0 7px rgba(255,255,255,.75),0 0 24px rgba(255,255,255,.8);
+ transition:transform 1.7s cubic-bezier(.5,0,.2,1)}
+.door-wrap.open .leaf{transform:rotateY(108deg)}
+.leaf .panel{position:absolute;left:18%;right:18%;border:2px solid rgba(160,196,230,.55);border-radius:60px 60px 8px 8px}
+.leaf .p1{top:10%;height:34%}
+.leaf .p2{top:50%;height:38%;border-radius:8px}
+.leaf .knob{position:absolute;right:12%;top:52%;width:12px;height:12px;border-radius:50%;background:#f4c6d6;box-shadow:0 0 8px rgba(244,198,214,.9)}
+
+/* ---------- Мир с замком ---------- */
+#world{background:linear-gradient(#bfe0fb 0%,#dff0fd 55%,#fdeef4 100%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:15vh}
+.cloud{position:absolute;left:-220px;height:34px;width:110px;background:#fff;border-radius:40px;opacity:.9;animation:drift linear infinite}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:50px;height:50px;top:-24px;left:16px}
+.cloud::after{width:36px;height:36px;top:-16px;left:58px}
+@keyframes drift{to{transform:translateX(calc(100vw + 450px))}}
+.hills{position:absolute;left:0;bottom:0;width:100%;height:34vh;z-index:1}
+.world-hint{position:absolute;top:max(9vh,50px);left:0;right:0;text-align:center;font-size:clamp(18px,4vw,26px);font-style:italic;z-index:3;animation:pulse 2.4s ease-in-out infinite}
+.castle-box{position:relative;z-index:2;width:clamp(250px,64vmin,480px);cursor:pointer;outline:none;transform-origin:50% 86%;transition:transform 2.3s cubic-bezier(.6,0,.9,.4)}
+.castle-box.zoom{transform:scale(8)}
+.castle-glow{position:absolute;width:150%;aspect-ratio:1;left:50%;top:45%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0) 62%);animation:pulse 4s ease-in-out infinite;pointer-events:none}
+
+/* ---------- Главный зал ---------- */
+#hall{background:linear-gradient(#e6f3ff 0%,#f6eef8 60%,#fbe9ef 100%);overflow-y:auto}
+.hall-inner{position:relative;min-height:100%;display:flex;flex-direction:column;align-items:center;padding:max(26px,env(safe-area-inset-top)) 14px 0}
+.floor{position:absolute;left:0;right:0;bottom:0;height:24%;background:linear-gradient(#f6e0e7,#f0d0da);z-index:0}
+.hall-title{font-size:clamp(28px,6vw,44px);font-style:italic;font-weight:500;position:relative;z-index:2;text-align:center}
+.hall-sub{font-size:clamp(15px,3.4vw,19px);font-style:italic;opacity:.85;margin-top:4px;position:relative;z-index:2;text-align:center}
+.doors{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,2.5vw,28px);width:min(760px,94vw);margin:clamp(16px,3vh,32px) 0 50px}
+@media(max-width:560px){.doors{grid-template-columns:repeat(2,1fr);width:min(330px,92vw);gap:18px}}
+.rdoor{border:0;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;color:inherit;text-align:center}
+.rdoor .arch{width:100%;max-width:120px;aspect-ratio:3/4.2;border-radius:999px 999px 8px 8px;background:linear-gradient(160deg,var(--c1),var(--c2));border:4px solid #fff;box-shadow:0 8px 20px rgba(120,150,190,.28);display:flex;align-items:center;justify-content:center;font-size:clamp(28px,6vw,38px);transition:transform .3s}
+.rdoor:hover .arch,.rdoor:focus-visible .arch{transform:translateY(-5px) scale(1.05)}
+.rdoor span{font-size:clamp(15px,3.3vw,19px);font-style:italic;line-height:1.2}
+.table-area{margin-top:auto;position:relative;z-index:2;width:min(600px,94vw);height:clamp(170px,28vh,230px)}
+.tabletop{position:absolute;left:0;right:0;bottom:34%;height:22%;min-height:36px;border-radius:16px;background:linear-gradient(#f9e2d6,#efc6b4);box-shadow:0 10px 24px rgba(160,110,100,.25);display:flex;align-items:center;justify-content:center;font-size:clamp(14px,3vw,17px);font-style:italic;color:#9a6f66}
+.leg{position:absolute;bottom:0;width:7%;height:36%;background:#e8b9a5;border-radius:0 0 6px 6px}
+.leg.l{left:8%}.leg.r{right:8%}
+.deco{position:absolute;bottom:54%;font-size:clamp(28px,6vw,38px)}
+.deco.l{left:9%}.deco.r{right:9%}
+.letter{position:absolute;left:50%;bottom:54%;width:min(46vw,170px);aspect-ratio:1.5;background:#fffdf8;border:0;border-radius:6px;box-shadow:0 8px 20px rgba(140,110,120,.3);cursor:pointer;animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0) rotate(-3deg)}50%{transform:translateX(-50%) translateY(-7px) rotate(-3deg)}}
+.letter .flap{position:absolute;left:0;top:0;width:100%;height:62%;background:#f6e3e8;clip-path:polygon(0 0,100% 0,50% 100%);border-radius:6px 6px 0 0}
+.letter .seal{position:absolute;left:50%;top:44%;transform:translateX(-50%);width:26px;height:26px;border-radius:50%;background:#f3a6bf;color:#fff;font-size:15px;line-height:26px;text-align:center}
+
+/* ---------- Комната ---------- */
+#room{background:linear-gradient(160deg,var(--c1,#ffe3ee),var(--c2,#fff3f8));display:flex;align-items:center;justify-content:center;padding:20px}
+.back{position:absolute;top:max(16px,env(safe-area-inset-top));left:16px;border:1px solid #fff;background:rgba(255,255,255,.7);color:#4d6f95;border-radius:999px;padding:9px 18px;font-size:17px;font-style:italic;cursor:pointer}
+.room-box{width:min(620px,100%);text-align:center}
+.room-icon{font-size:clamp(40px,9vw,58px);margin-bottom:6px}
+.room-box h2{font-size:clamp(28px,6vw,42px);font-style:italic;font-weight:500;margin-bottom:22px}
+.qcard{background:rgba(255,255,255,.75);border:1px solid #fff;border-radius:24px;padding:clamp(24px,6vw,44px);min-height:clamp(170px,30vh,240px);display:flex;flex-direction:column;justify-content:center;gap:14px;box-shadow:0 12px 40px rgba(110,140,180,.2);transition:opacity .45s,transform .45s}
+.qcard.out{opacity:0;transform:translateY(10px)}
+.qcard p{font-size:clamp(21px,5vw,31px);line-height:1.45;font-style:italic;color:#44668d}
+.qcard small{font-size:clamp(14px,3.2vw,17px);opacity:.75}
+.dots{display:flex;gap:8px;justify-content:center;margin:20px 0 16px}
+.dots i{width:9px;height:9px;border-radius:50%;background:rgba(77,111,149,.28);transition:.3s}
+.dots i.on{background:#4d6f95;transform:scale(1.3)}
+.next{border:0;background:#fff;color:#4d6f95;border-radius:999px;padding:12px 30px;font-size:19px;font-style:italic;cursor:pointer;box-shadow:0 6px 18px rgba(110,140,180,.25)}
+
+/* ---------- Письмо ---------- */
+.modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(190,220,245,.65);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .6s,visibility .6s}
+.modal.show{opacity:1;visibility:visible}
+.paper{position:relative;width:min(560px,100%);max-height:88vh;max-height:88dvh;overflow:auto;background:#fffdf7;border-radius:6px 6px 14px 14px;padding:clamp(26px,6vw,46px);box-shadow:0 20px 60px rgba(100,130,170,.35);transform:translateY(40px) scale(.92) rotate(-1.5deg);transition:transform .8s cubic-bezier(.2,.9,.3,1.2);font-family:'Marck Script',cursive;color:#5a4a56;font-size:clamp(19px,4.8vw,25px);line-height:1.55}
+.modal.show .paper{transform:none}
+.paper p{margin-bottom:.9em}
+.paper .to{font-size:1.2em}
+.paper .sign{margin-bottom:0;text-align:right}
+.paper .kiss{text-align:right;font-size:2.2em;line-height:1.1;animation:beat 1.6s ease-in-out infinite}
+.paper .name{text-align:right;font-size:1.25em;margin:0;color:#c0577c}
+@keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.close{position:sticky;top:0;float:right;margin:-14px -14px 0 0;width:38px;height:38px;border:0;border-radius:50%;background:#f6e3e8;color:#9a6f7e;font-size:22px;cursor:pointer}
+.hearts{position:fixed;inset:0;z-index:61;pointer-events:none;overflow:hidden}
+.heart{position:absolute;bottom:-40px;animation:rise 4.5s ease-in forwards}
+@keyframes rise{to{transform:translateY(-115vh) rotate(20deg);opacity:0}}
+</style>
+</head>
+<body>
+
+<div id="sparkles"></div>
+<div id="flash"></div>
+
+<!-- 1. Дверь -->
+<section class="scene active" id="gate">
+  <h1 class="title">Для тебя</h1>
+  <div class="door-wrap" id="door" role="button" tabindex="0" aria-label="Открыть дверь">
+    <div class="rays"></div>
+    <div class="frame">
+      <div class="inside"></div>
+      <div class="leaf"><div class="panel p1"></div><div class="panel p2"></div><span class="knob"></span></div>
+    </div>
+  </div>
+  <p class="hint" id="hint1">Нажми на дверь</p>
+</section>
+
+<!-- 2. Мир с замком -->
+<section class="scene" id="world">
+  <div class="cloud" style="top:9%;animation-duration:80s;animation-delay:-20s"></div>
+  <div class="cloud" style="top:20%;animation-duration:110s;animation-delay:-70s;transform:scale(.8)"></div>
+  <div class="cloud" style="top:32%;animation-duration:95s;animation-delay:-45s;transform:scale(1.2)"></div>
+  <p class="world-hint">Нажми на замок</p>
+  <svg class="hills" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 60 Q80 10 170 50 T400 40 V120 H0Z" fill="#d7f0e4"/>
+    <path d="M0 90 Q100 45 210 80 T400 70 V120 H0Z" fill="#c4e8d6"/>
+  </svg>
+  <div class="castle-box" id="castle" role="button" tabindex="0" aria-label="Войти в замок">
+    <div class="castle-glow"></div>
+    <svg viewBox="0 -20 300 280" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:auto;position:relative;animation:float 5s ease-in-out infinite" aria-hidden="true">
+      <ellipse cx="150" cy="252" rx="130" ry="7" fill="#c9e9d8"/>
+      <g stroke="#bcd0e6" stroke-width="1.5" stroke-linejoin="round">
+        <rect x="52" y="140" width="46" height="112" fill="#fffdfb"/>
+        <rect x="202" y="140" width="46" height="112" fill="#fffdfb"/>
+        <rect x="105" y="120" width="90" height="132" fill="#fffdfb"/>
+        <rect x="128" y="60" width="44" height="62" fill="#fffdfb"/>
+        <rect x="105" y="112" width="16" height="8" fill="#fffdfb"/>
+        <rect x="179" y="112" width="16" height="8" fill="#fffdfb"/>
+        <polygon points="44,142 75,88 106,142" fill="#f5b8cf"/>
+        <polygon points="194,142 225,88 256,142" fill="#f5b8cf"/>
+        <polygon points="120,62 150,10 180,62" fill="#a9c8f2"/>
+      </g>
+      <g stroke="#8aa6c8" stroke-width="1.5"><line x1="150" y1="10" x2="150" y2="-12"/><line x1="75" y1="88" x2="75" y2="68"/><line x1="225" y1="88" x2="225" y2="68"/></g>
+      <polygon points="150,-12 172,-5 150,2" fill="#f5b8cf"/>
+      <polygon points="75,68 94,74 75,80" fill="#a9c8f2"/>
+      <polygon points="225,68 244,74 225,80" fill="#a9c8f2"/>
+      <g fill="#cfe4fa" stroke="#bcd0e6" stroke-width="1.2">
+        <path d="M143 108V92a7 7 0 0 1 14 0v16z"/>
+        <path d="M68 178v-16a7 7 0 0 1 14 0v16z"/>
+        <path d="M218 178v-16a7 7 0 0 1 14 0v16z"/>
+        <path d="M118 165v-14a6 6 0 0 1 12 0v14z"/>
+        <path d="M170 165v-14a6 6 0 0 1 12 0v14z"/>
+      </g>
+      <path d="M128 252v-40a22 22 0 0 1 44 0v40z" fill="#ffeaa8" stroke="#bcd0e6" stroke-width="1.5"/>
+      <path d="M150 252v-62" stroke="#e5c97a" stroke-width="1"/>
+    </svg>
+  </div>
+</section>
+
+<!-- 3. Главный зал -->
+<section class="scene" id="hall">
+  <div class="hall-inner">
+    <div class="floor"></div>
+    <h2 class="hall-title">Главный зал</h2>
+    <p class="hall-sub">Выбери дверь — за каждой тепло для тебя</p>
+    <div class="doors" id="doors"></div>
+    <div class="table-area">
+      <span class="deco l">🕯️</span>
+      <span class="deco r">🌷</span>
+      <button class="letter" id="letterBtn" aria-label="Открыть письмо"><div class="flap"></div><div class="seal">♥</div></button>
+      <div class="leg l"></div><div class="leg r"></div>
+      <div class="tabletop">Нажми на письмо</div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. Комната -->
+<section class="scene" id="room">
+  <button class="back" id="back">← В зал</button>
+  <div class="room-box">
+    <div class="room-icon" id="roomIcon"></div>
+    <h2 id="roomTitle"></h2>
+    <div class="qcard" id="qcard"><p id="qText"></p><small id="qSrc"></small></div>
+    <div class="dots" id="dots"></div>
+    <button class="next" id="next">Дальше ✦</button>
+  </div>
+</section>
+
+<!-- Письмо -->
+<div class="modal" id="modal">
+  <div class="paper" id="paper">
+    <button class="close" id="close" aria-label="Закрыть">×</button>
+    <div id="letterText"></div>
+  </div>
+</div>
+<div class="hearts" id="hearts"></div>
+
+<script>
+/* ======= ТВОИ НАСТРОЙКИ: меняй тексты здесь ======= */
+const CONFIG = {
+  to: "Моя родная",
+  from: "Амир",
+  letter: [
+    "Я долго думал, с чего начать это письмо, и понял, что начинать нужно с главного: спасибо, что ты есть.",
+    "Рядом с тобой даже обычные дни становятся тёплыми и светлыми. Твоя улыбка согревает лучше любого солнца, а твой голос успокаивает лучше любых слов.",
+    "Ты — самое доброе, что случилось со мной. Ты добавляешь красоты в каждый мой день, даже не замечая этого.",
+    "Пусть в твоём сердце всегда живёт покой, пусть рядом будут те, кто тебя любит, и пусть каждая мечта найдёт к тебе дорогу. А я постараюсь быть рядом и беречь твою улыбку.",
+    "Ты — мой самый любимый свет."
+  ],
+  rooms: [
+    { name: "Комната нежности", icon: "🌸", c1: "#ffd6e5", c2: "#fff0f6", quotes: [
+      ["Встретив тебя, я поверил, что в этом мире есть ещё доброта и красота прожитой жизни.", "для тебя"],
+      ["Твоя нежность — как тихий свет в окне, к которому всегда хочется вернуться.", "для тебя"],
+      ["Есть люди, рядом с которыми душа расправляет крылья. Ты — одна из них.", "для тебя"]
+    ]},
+    { name: "Комната света", icon: "✨", c1: "#fff1c4", c2: "#fffbea", quotes: [
+      ["Ты умеешь зажигать свет там, где другие видят только сумерки.", "для тебя"],
+      ["Твоя улыбка — маленькое утро посреди любого дня.", "для тебя"],
+      ["Если бы доброта имела лицо, у неё были бы твои глаза.", "для тебя"]
+    ]},
+    { name: "Комната тепла", icon: "🧡", c1: "#ffd9c7", c2: "#fff1ea", quotes: [
+      ["С тобой даже молчание звучит как самая красивая музыка.", "для тебя"],
+      ["Дом — это не стены. Дом — это тот, рядом с кем тепло.", "для тебя"],
+      ["Ты — чашка горячего чая в самый холодный вечер.", "для тебя"]
+    ]},
+    { name: "Комната мечты", icon: "🌙", c1: "#dcd6ff", c2: "#f3f0ff", quotes: [
+      ["Пусть все твои мечты найдут дорогу к тебе.", "для тебя"],
+      ["Ты достойна самой нежной сказки, и я хочу быть её частью.", "для тебя"],
+      ["Каждый день рядом с тобой — как новая страница доброй книги.", "для тебя"]
+    ]}
+  ]
+};
+/* ================================================== */
+
+const $ = s => document.querySelector(s);
+let busy = false;
+
+function show(id){
+  document.querySelectorAll('.scene').forEach(s => s.classList.toggle('active', s.id === id));
+}
+function act(el, fn){
+  el.addEventListener('click', fn);
+  el.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); fn(); } });
+}
+
+/* искорки */
+(function(){
+  const sp = $('#sparkles');
+  for(let i = 0; i < 34; i++){
+    const s = document.createElement('span');
+    const z = 3 + Math.random() * 6;
+    s.style.cssText = `left:${Math.random()*100}%;width:${z}px;height:${z}px;animation-duration:${9+Math.random()*10}s;animation-delay:${-Math.random()*15}s`;
+    sp.appendChild(s);
+  }
+})();
+
+/* 1. дверь -> свет -> мир */
+act($('#door'), () => {
+  if(busy) return; busy = true;
+  $('#door').classList.add('open');
+  $('#hint1').style.opacity = 0;
+  setTimeout(() => $('#flash').classList.add('on'), 1300);
+  setTimeout(() => { show('world'); $('#flash').classList.remove('on'); busy = false; }, 2800);
+});
+
+/* 2. замок -> зал */
+act($('#castle'), () => {
+  if(busy) return; busy = true;
+  $('#castle').classList.add('zoom');
+  setTimeout(() => $('#flash').classList.add('on'), 1000);
+  setTimeout(() => { show('hall'); $('#flash').classList.remove('on'); busy = false; }, 2500);
+});
+
+/* 3. двери комнат */
+const doors = $('#doors');
+CONFIG.rooms.forEach((r, i) => {
+  const b = document.createElement('button');
+  b.className = 'rdoor';
+  b.innerHTML = `<div class="arch" style="--c1:${r.c1};--c2:${r.c2}">${r.icon}</div><span>${r.name}</span>`;
+  b.addEventListener('click', () => openRoom(i));
+  doors.appendChild(b);
+});
+
+let cur = null, qi = 0;
+function openRoom(i){
+  cur = CONFIG.rooms[i]; qi = 0;
+  const room = $('#room');
+  room.style.setProperty('--c1', cur.c1);
+  room.style.setProperty('--c2', cur.c2);
+  $('#roomIcon').textContent = cur.icon;
+  $('#roomTitle').textContent = cur.name;
+  renderQuote();
+  show('room');
+}
+function renderQuote(){
+  const q = cur.quotes[qi];
+  $('#qText').textContent = '«' + q[0] + '»';
+  $('#qSrc').textContent = q[1] ? '— ' + q[1] : '';
+  $('#dots').innerHTML = cur.quotes.map((_, k) => `<i class="${k === qi ? 'on' : ''}"></i>`).join('');
+}
+function nextQuote(){
+  const c = $('#qcard');
+  c.classList.add('out');
+  setTimeout(() => { qi = (qi + 1) % cur.quotes.length; renderQuote(); c.classList.remove('out'); }, 420);
+}
+$('#next').addEventListener('click', nextQuote);
+$('#qcard').addEventListener('click', nextQuote);
+$('#back').addEventListener('click', () => show('hall'));
+
+/* 4. письмо */
+$('#letterText').innerHTML =
+  `<p class="to">${CONFIG.to},</p>` +
+  CONFIG.letter.map(p => `<p>${p}</p>`).join('') +
+  `<p class="sign">Целую тебя нежно</p><div class="kiss">💋</div><p class="name">Твой ${CONFIG.from}</p>`;
+
+function openLetter(){
+  $('#modal').classList.add('show');
+  const box = $('#hearts');
+  const list = ['💗','💖','🤍','💕','🌸'];
+  for(let i = 0; i < 16; i++){
+    const h = document.createElement('span');
+    h.className = 'heart';
+    h.textContent = list[Math.floor(Math.random() * list.length)];
+    h.style.cssText = `left:${Math.random()*100}%;font-size:${16+Math.random()*22}px;animation-delay:${Math.random()*2.5}s`;
+    box.appendChild(h);
+    setTimeout(() => h.remove(), 7500);
+  }
+}
+function closeLetter(){ $('#modal').classList.remove('show'); }
+$('#letterBtn').addEventListener('click', openLetter);
+$('#close').addEventListener('click', closeLetter);
+$('#modal').addEventListener('click', e => { if(e.target.id === 'modal') closeLetter(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeLetter(); });
+</script>
+</body>
+</html>
